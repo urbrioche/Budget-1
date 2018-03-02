@@ -50,6 +50,39 @@ namespace Budget
             AmountShouldBe(31, result);
         }
 
+        [TestMethod]
+        public void GetBudgetArrangeOfMonth()
+        {
+            var result = cb.GiveMeBudget(new DateTime(2018, 1, 1), new DateTime(2018, 1, 15));
+
+            AmountShouldBe(15, result);
+        }
+
+        [TestMethod]
+        public void GetBudgetAfterMonth()
+        {
+            var result = cb.GiveMeBudget(new DateTime(2018, 5, 1), new DateTime(2018, 5, 15));
+
+            AmountShouldBe(0, result);
+        }
+
+        [TestMethod]
+        public void GetBudgetArrangeOfTwoMonth()
+        {
+            var result = cb.GiveMeBudget(new DateTime(2018, 1, 1), new DateTime(2018, 2, 15));
+
+            AmountShouldBe(181, result);
+        }
+
+        [TestMethod]
+        public void GetBudgetArrangeOfThreeMonth()
+        {
+            var result = cb.GiveMeBudget(new DateTime(2018, 1, 1), new DateTime(2018, 3, 15));
+
+            AmountShouldBe(311, result);
+        }
+
+
         private void AmountShouldBe(int expeced, int actual)
         {
             Assert.AreEqual(expeced, actual);
