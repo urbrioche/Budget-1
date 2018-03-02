@@ -55,7 +55,7 @@ namespace Budget
                     amountCount += budgets.Where(p => p.YearMonth.Equals(temp.ToString("yyyyMM")))
                         .Select(p => p.Amount).FirstOrDefault();
 
-                    temp.AddMonths(1);
+                    temp=temp.AddMonths(1);
                 }
 
                 return startDatefullBedget.GetOneDayAmount() * ((DaysInMonth(dtStartDate) - dtStartDate.Day)+ 1) + endDatefullBedget.GetOneDayAmount() * (dtEndDate.Day) + amountCount;
