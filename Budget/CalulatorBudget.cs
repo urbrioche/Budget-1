@@ -50,6 +50,11 @@ namespace Budget
                 var startDatefullBedget = budgets.Where(x => x.YearMonth == dtStartDate.ToString("yyyyMM")).FirstOrDefault();
                 var endDatefullBedget = budgets.Where(x => x.YearMonth == dtEndDate.ToString("yyyyMM")).FirstOrDefault();
 
+                if (startDatefullBedget == null || endDatefullBedget == null)
+                {
+                    return 0;
+                }
+
                 while (temp.ToString("yyyyMM") != dtEndDate.ToString("yyyyMM"))
                 {
                     amountCount += budgets.Where(p => p.YearMonth.Equals(temp.ToString("yyyyMM")))
