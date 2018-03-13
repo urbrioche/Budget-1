@@ -8,6 +8,6 @@ namespace Budget
 {
     public interface IRepository<T>
     {
-        List<BudgetObj> GetAll();
+        List<Budget> GetAll();
     }
 }

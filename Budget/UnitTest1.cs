@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 
@@ -8,78 +9,130 @@ namespace Budget
     [TestClass]
     public class UnitTest1
     {
-        private IRepository<BudgetObj> repo = Substitute.For<IRepository<BudgetObj>>();
-        private CalulatorBudget cb;
+        private IRepository<Budget> repo = Substitute.For<IRepository<Budget>>();
+        private Accounting _accounting;
 
         [TestInitialize]
         public void Init()
         {
-            repo.GetAll().Returns(
-                new List<BudgetObj>()
-                {
-                    new BudgetObj(){YearMonth = "201801",Amount = 31},
-                    new BudgetObj(){YearMonth = "201802",Amount = 280},
-                    new BudgetObj(){YearMonth = "201803",Amount = 0},
-                    new BudgetObj(){YearMonth = "201804",Amount = 3000},
-                });
-
-            cb = new CalulatorBudget(repo);
+            //GivenBudgets(new List<Budget>()
+            //{
+            //    new Budget() {YearMonth = "201801", Amount = 31},
+            //    new Budget() {YearMonth = "201802", Amount = 280},
+            //    new Budget() {YearMonth = "201803", Amount = 0},
+            //    new Budget() {YearMonth = "201804", Amount = 3000},
+            //}.ToArray());
+            _accounting = new Accounting(repo);
         }
 
-
-        [TestMethod]
-        public void BudgetNotFind()
+        private void GivenBudgets(params Budget[] budgets)
         {
-            var result = cb.GiveMeBudget(new DateTime(2017, 12, 1), new DateTime(2018, 1, 1));
+            repo.GetAll().Returns(
+                budgets.ToList());
+        }
+
+        /// <summary>
+        /// no_budgets()
+        /// </summary>
+        [TestMethod]
+        public void no_budgets()
+        {
+            GivenBudgets();
+            var result = _accounting.GiveMeBudget(new DateTime(2017, 12, 1), new DateTime(2018, 1, 1));
 
             AmountShouldBe(0, result);
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public void StartDateAfterEndDate()
+        public void invalid_period()
         {
-            var result = cb.GiveMeBudget(new DateTime(2018, 1, 1), new DateTime(2012, 1, 1));
+            GivenBudgets(new Budget() { YearMonth = "201801", Amount = 31 });
+            var result = _accounting.GiveMeBudget(new DateTime(2018, 1, 1), new DateTime(2012, 1, 1));
         }
 
+        /// <summary>
+        /// GetOneMonthBudget
+        /// </summary>
         [TestMethod]
-        public void GetOneMonthBudget()
+        public void period_equals_to_one_budget_month()
         {
-            var result = cb.GiveMeBudget(new DateTime(2018, 1, 1), new DateTime(2018, 1, 31));
+            GivenBudgets(
+                new Budget() { YearMonth = "201801", Amount = 31 });
+            var result = _accounting.GiveMeBudget(new DateTime(2018, 1, 1), new DateTime(2018, 1, 31));
 
             AmountShouldBe(31, result);
         }
 
+        /// <summary>
+        /// GetBudgetArrangeOfMonth
+        /// </summary>
         [TestMethod]
-        public void GetBudgetArrangeOfMonth()
+        public void period_inside_one_budget_month()
         {
-            var result = cb.GiveMeBudget(new DateTime(2018, 1, 1), new DateTime(2018, 1, 15));
+            GivenBudgets(new Budget() { YearMonth = "201801", Amount = 31 });
+            var result = _accounting.GiveMeBudget(new DateTime(2018, 1, 1), new DateTime(2018, 1, 15));
 
             AmountShouldBe(15, result);
         }
 
+        /// <summary>
+        /// GetBudgetAfterMonth
+        /// </summary>
         [TestMethod]
-        public void GetBudgetAfterMonth()
+        public void period_after_one_budget_month()
         {
-            var result = cb.GiveMeBudget(new DateTime(2018, 5, 1), new DateTime(2018, 5, 15));
+            GivenBudgets(new Budget() { YearMonth = "201801", Amount = 31 });
+
+            var result = _accounting.GiveMeBudget(new DateTime(2018, 5, 1), new DateTime(2018, 5, 15));
 
             AmountShouldBe(0, result);
         }
 
+        /// <summary>
+        /// GetBudgetArrangeOfTwoMonth
+        /// </summary>
         [TestMethod]
-        public void GetBudgetArrangeOfTwoMonth()
+        public void perio_cross_two_budget_month()
         {
-            var result = cb.GiveMeBudget(new DateTime(2018, 1, 1), new DateTime(2018, 2, 15));
+            GivenBudgets(
+                new Budget() { YearMonth = "201801", Amount = 31 },
+                new Budget() { YearMonth = "201802", Amount = 280 }
+                );
+            var result = _accounting.GiveMeBudget(new DateTime(2018, 1, 1), new DateTime(2018, 2, 15));
 
             AmountShouldBe(181, result);
         }
 
+        /// <summary>
+        /// GetBudgetArrangeOfThreeMonth
+        /// </summary>
         [TestMethod]
-        public void GetBudgetArrangeOfThreeMonth()
+        public void period_cross_three_budget_month()
         {
-            var result = cb.GiveMeBudget(new DateTime(2018, 1, 1), new DateTime(2018, 3, 15));
+            GivenBudgets(
+                new Budget() { YearMonth = "201801", Amount = 31 },
+                new Budget() { YearMonth = "201802", Amount = 280 },
+                new Budget() { YearMonth = "201803", Amount = 0 }
+            );
+
+            var result = _accounting.GiveMeBudget(new DateTime(2018, 1, 1), new DateTime(2018, 3, 15));
 
             AmountShouldBe(311, result);
+        }
+
+        [TestMethod]
+        public void not_continuous_budget_month()
+        {
+            GivenBudgets(
+                new Budget() { YearMonth = "201801", Amount = 31 },
+                new Budget() { YearMonth = "201802", Amount = 280 },
+                new Budget() { YearMonth = "201804", Amount = 60 }
+            );
+
+            var result = _accounting.GiveMeBudget(new DateTime(2018, 1, 1), new DateTime(2018, 4, 15));
+
+            AmountShouldBe(341, result);
         }
 
 

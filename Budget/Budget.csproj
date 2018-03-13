@@ -64,8 +64,8 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="BudgetObj.cs" />
-    <Compile Include="CalulatorBudget.cs" />
+    <Compile Include="Budget.cs" />
+    <Compile Include="Accounting.cs" />
     <Compile Include="IRepository.cs" />
     <Compile Include="UnitTest1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
