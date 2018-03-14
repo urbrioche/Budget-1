@@ -23,30 +23,18 @@ namespace Budget
             return (EndDate - StartDate).Days + 1;
         }
 
-        public int OverlappingDays(Budget budget)
+        public int OverlappingDays(Period period)
         {
-            DateTime effectiveStartDate;
-            DateTime effectiveEndDate;
-            if (StartDate < budget.FirstDay)
-            {
-                effectiveStartDate = budget.FirstDay;
-            }
-            else
-            {
-                effectiveStartDate = StartDate;
-            }
-
-            if (EndDate < budget.LastDay)
-            {
-                effectiveEndDate = EndDate;
-            }
-            else
-            {
-                effectiveEndDate = budget.LastDay;
-            }
-
-
+            if (HasNoOverlappingDays(period))
+                return 0;
+            var effectiveStartDate = StartDate < period.StartDate ? period.StartDate : StartDate;
+            var effectiveEndDate = EndDate < period.EndDate ? EndDate : period.EndDate;
             return (effectiveEndDate.AddDays(1) - effectiveStartDate).Days;
+        }
+
+        private bool HasNoOverlappingDays(Period period)
+        {
+            return EndDate < period.StartDate || StartDate > period.EndDate;
         }
     }
 
@@ -82,28 +70,14 @@ namespace Budget
 
 
             var period = new Period(startDate, endDate);
-            if (IsSameMonth())
-            {
-                var budget = budgets.FirstOrDefault(x => x.YearMonth == startDate.ToString("yyyyMM"));
-                if (budget != null)
-                {
-                    var overlappingDays = period.OverlappingDays(budget);
-                    return budget.GetOneDayAmount() * overlappingDays;
-                }
 
-                return 0;
-
-            }
-            else
+            var totalAmount = 0;
+            foreach (var budget in budgets)
             {
-                var totalAmount = 0;
-                foreach (var budget in budgets)
-                {
-                    var overlappingDays = period.OverlappingDays(budget);
-                    totalAmount += budget.GetOneDayAmount() * overlappingDays;
-                }
-                return totalAmount;                
+                var overlappingDays = period.OverlappingDays(new Period(budget.FirstDay, budget.LastDay));
+                totalAmount += budget.GetOneDayAmount() * overlappingDays;
             }
+            return totalAmount;
         }
 
 

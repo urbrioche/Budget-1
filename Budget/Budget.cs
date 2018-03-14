@@ -31,6 +31,7 @@ namespace Budget
 
         public int GetOneDayAmount()
         {
+            return Amount / DateTime.DaysInMonth(FirstDay.Year, FirstDay.Month);
             return Amount / DateTime.DaysInMonth(
                 int.Parse(YearMonth.Substring(0, 4)),
                     int.Parse((YearMonth.Substring(4, 2))));
