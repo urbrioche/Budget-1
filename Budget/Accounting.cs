@@ -1,55 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Budget
 {
-    public class Period
-    {
-        public Period(DateTime startDate, DateTime endDate)
-        {
-            StartDate = startDate;
-            EndDate = endDate;
-        }
-
-        public DateTime StartDate { get; private set; }
-        public DateTime EndDate { get; private set; }
-
-        public int EffectiveDays()
-        {
-            return (EndDate - StartDate).Days + 1;
-        }
-
-        public int OverlappingDays(Period period)
-        {
-            if (HasNoOverlappingDays(period))
-                return 0;
-            var effectiveStartDate = StartDate < period.StartDate ? period.StartDate : StartDate;
-            var effectiveEndDate = EndDate < period.EndDate ? EndDate : period.EndDate;
-            return (effectiveEndDate.AddDays(1) - effectiveStartDate).Days;
-        }
-
-        private bool HasNoOverlappingDays(Period period)
-        {
-            return EndDate < period.StartDate || StartDate > period.EndDate;
-        }
-    }
-
     public class Accounting
     {
-        private readonly IRepository<Budget> repo;
-
-        private DateTime _dtStartDate;
-        private DateTime _dtEndDate;
-        //private readonly DateTime startDate;
-        //private readonly DateTime endDate;
+        private readonly IRepository<Budget> _repo;
 
         public Accounting(IRepository<Budget> repo)
         {
-            this.repo = repo;
+            this._repo = repo;
         }
 
         public int GiveMeBudget(DateTime startDate, DateTime endDate)
@@ -59,7 +19,7 @@ namespace Budget
                 throw new ArgumentException();
             }
 
-            var budgets = repo.GetAll();
+            var budgets = _repo.GetAll();
             if (!budgets.Any())
             {
                 return 0;
@@ -67,22 +27,6 @@ namespace Budget
 
             var period = new Period(startDate, endDate);
             return budgets.Sum(b => b.EffectiveAmount(period));
-        }
-
-
-        private bool IsFullMonth(DateTime dtStartDate, DateTime dtEndDate)
-        {
-            return (dtEndDate - dtStartDate).Days == DaysInMonth(dtEndDate) - 1;
-        }
-
-        private static int DaysInMonth(DateTime dateTime)
-        {
-            return DateTime.DaysInMonth(dateTime.Year, dateTime.Month);
-        }
-
-        private bool IsSameMonth()
-        {
-            return _dtStartDate.Month == _dtEndDate.Month && _dtStartDate.Year == _dtEndDate.Year;
         }
     }
 }

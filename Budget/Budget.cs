@@ -12,7 +12,8 @@ namespace Budget
 
         public string YearMonth { get; set; }
         public int Amount { get; set; }
-        public DateTime FirstDay
+
+        private DateTime FirstDay
         {
             get
             {
@@ -20,7 +21,7 @@ namespace Budget
             }
         }
 
-        public DateTime LastDay
+        private DateTime LastDay
         {
             get
             {
@@ -36,7 +37,7 @@ namespace Budget
             }
         }
 
-        public int DailyAmount
+        private int DailyAmount
         {
             get
             {
