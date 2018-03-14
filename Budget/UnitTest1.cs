@@ -89,11 +89,23 @@ namespace Budget
             AmountShouldBe(0, result);
         }
 
+        [TestMethod]
+        public void period_before_one_budget_month()
+        {
+            GivenBudgets(new Budget() { YearMonth = "201801", Amount = 31 });
+
+            var result = _accounting.GiveMeBudget(new DateTime(2017, 12, 1), new DateTime(2017, 12, 15));
+
+            AmountShouldBe(0, result);
+        }
+
+
+
         /// <summary>
         /// GetBudgetArrangeOfTwoMonth
         /// </summary>
         [TestMethod]
-        public void perio_cross_two_budget_month()
+        public void period_cross_two_budget_month()
         {
             GivenBudgets(
                 new Budget() { YearMonth = "201801", Amount = 31 },
@@ -130,9 +142,9 @@ namespace Budget
                 new Budget() { YearMonth = "201804", Amount = 60 }
             );
 
-            var result = _accounting.GiveMeBudget(new DateTime(2018, 1, 1), new DateTime(2018, 4, 15));
+            var result = _accounting.GiveMeBudget(new DateTime(2018, 1, 1), new DateTime(2018, 5, 15));
 
-            AmountShouldBe(341, result);
+            AmountShouldBe(371, result);
         }
 
 

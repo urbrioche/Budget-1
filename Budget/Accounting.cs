@@ -7,6 +7,49 @@ using System.Threading.Tasks;
 
 namespace Budget
 {
+    public class Period
+    {
+        public Period(DateTime startDate, DateTime endDate)
+        {
+            StartDate = startDate;
+            EndDate = endDate;
+        }
+
+        public DateTime StartDate { get; private set; }
+        public DateTime EndDate { get; private set; }
+
+        public int EffectiveDays()
+        {
+            return (EndDate - StartDate).Days + 1;
+        }
+
+        public int OverlappingDays(Budget budget)
+        {
+            DateTime effectiveStartDate;
+            DateTime effectiveEndDate;
+            if (StartDate < budget.FirstDay)
+            {
+                effectiveStartDate = budget.FirstDay;
+            }
+            else
+            {
+                effectiveStartDate = StartDate;
+            }
+
+            if (EndDate < budget.LastDay)
+            {
+                effectiveEndDate = EndDate;
+            }
+            else
+            {
+                effectiveEndDate = budget.LastDay;
+            }
+
+
+            return (effectiveEndDate.AddDays(1) - effectiveStartDate).Days;
+        }
+    }
+
     public class Accounting
     {
         private readonly IRepository<Budget> repo;
@@ -43,7 +86,9 @@ namespace Budget
                 var budget = budgets.FirstOrDefault(x => x.YearMonth == startDate.ToString("yyyyMM"));
                 if (budget != null)
                 {
-                    return budget.GetOneDayAmount() * EffectiveDays(startDate, endDate);
+                    var period = new Period(startDate, endDate);
+                    var overlappingDays = period.OverlappingDays(budget);
+                    return budget.GetOneDayAmount() * overlappingDays;
                 }
 
                 return 0;
@@ -57,9 +102,21 @@ namespace Budget
                 var startDatefullBedget = budgets.FirstOrDefault(x => x.YearMonth == startDate.ToString("yyyyMM"));
                 var endDatefullBedget = budgets.FirstOrDefault(x => x.YearMonth == endDate.ToString("yyyyMM"));
 
-                if (startDatefullBedget == null || endDatefullBedget == null)
+                //if (startDatefullBedget == null || endDatefullBedget == null)
+                //{
+                //    return 0;
+                //}
+
+                var startDateOneDayAmount = 0;
+                var endDateOneDayAmount = 0;
+                if (startDatefullBedget != null)
                 {
-                    return 0;
+                    startDateOneDayAmount = startDatefullBedget.GetOneDayAmount();
+                }
+
+                if (endDatefullBedget != null)
+                {
+                    endDateOneDayAmount = endDatefullBedget.GetOneDayAmount();
                 }
 
                 while (temp.ToString("yyyyMM") != endDate.ToString("yyyyMM"))
@@ -70,17 +127,14 @@ namespace Budget
                     temp = temp.AddMonths(1);
                 }
 
-                return startDatefullBedget.GetOneDayAmount() * ((DaysInMonth(startDate) - startDate.Day) + 1) + endDatefullBedget.GetOneDayAmount() * (endDate.Day) + amountCount;
+                
+
+                return startDateOneDayAmount * ((DaysInMonth(startDate) - startDate.Day) + 1) + endDateOneDayAmount * (endDate.Day) + amountCount;
 
                 return 0;
             }
 
 
-        }
-
-        private static int EffectiveDays(DateTime startDate, DateTime endDate)
-        {
-            return (endDate - startDate).Days + 1;
         }
 
 
