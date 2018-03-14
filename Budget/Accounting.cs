@@ -81,60 +81,29 @@ namespace Budget
             _dtEndDate = endDate;
 
 
+            var period = new Period(startDate, endDate);
             if (IsSameMonth())
             {
                 var budget = budgets.FirstOrDefault(x => x.YearMonth == startDate.ToString("yyyyMM"));
                 if (budget != null)
                 {
-                    var period = new Period(startDate, endDate);
                     var overlappingDays = period.OverlappingDays(budget);
                     return budget.GetOneDayAmount() * overlappingDays;
                 }
 
                 return 0;
-                
+
             }
             else
             {
-                DateTime temp = startDate.AddMonths(1);
-                int amountCount = 0;
-
-                var startDatefullBedget = budgets.FirstOrDefault(x => x.YearMonth == startDate.ToString("yyyyMM"));
-                var endDatefullBedget = budgets.FirstOrDefault(x => x.YearMonth == endDate.ToString("yyyyMM"));
-
-                //if (startDatefullBedget == null || endDatefullBedget == null)
-                //{
-                //    return 0;
-                //}
-
-                var startDateOneDayAmount = 0;
-                var endDateOneDayAmount = 0;
-                if (startDatefullBedget != null)
+                var totalAmount = 0;
+                foreach (var budget in budgets)
                 {
-                    startDateOneDayAmount = startDatefullBedget.GetOneDayAmount();
+                    var overlappingDays = period.OverlappingDays(budget);
+                    totalAmount += budget.GetOneDayAmount() * overlappingDays;
                 }
-
-                if (endDatefullBedget != null)
-                {
-                    endDateOneDayAmount = endDatefullBedget.GetOneDayAmount();
-                }
-
-                while (temp.ToString("yyyyMM") != endDate.ToString("yyyyMM"))
-                {
-                    amountCount += budgets.Where(p => p.YearMonth.Equals(temp.ToString("yyyyMM")))
-                        .Select(p => p.Amount).FirstOrDefault();
-
-                    temp = temp.AddMonths(1);
-                }
-
-                
-
-                return startDateOneDayAmount * ((DaysInMonth(startDate) - startDate.Day) + 1) + endDateOneDayAmount * (endDate.Day) + amountCount;
-
-                return 0;
+                return totalAmount;                
             }
-
-
         }
 
 
