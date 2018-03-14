@@ -65,19 +65,8 @@ namespace Budget
                 return 0;
             }
 
-            _dtStartDate = startDate;
-            _dtEndDate = endDate;
-
-
             var period = new Period(startDate, endDate);
-
-            var totalAmount = 0;
-            foreach (var budget in budgets)
-            {
-                var overlappingDays = period.OverlappingDays(new Period(budget.FirstDay, budget.LastDay));
-                totalAmount += budget.GetOneDayAmount() * overlappingDays;
-            }
-            return totalAmount;
+            return budgets.Sum(b => b.EffectiveAmount(period));
         }
 
 

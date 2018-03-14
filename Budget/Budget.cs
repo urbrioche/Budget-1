@@ -24,17 +24,29 @@ namespace Budget
         {
             get
             {
-                return DateTime.ParseExact(YearMonth + DateTime.DaysInMonth(FirstDay.Year, FirstDay.Month), "yyyyMMdd", null);
-
+                return DateTime.ParseExact(YearMonth + TotalDays, "yyyyMMdd", null);
             }
         }
 
-        public int GetOneDayAmount()
+        private int TotalDays
         {
-            return Amount / DateTime.DaysInMonth(FirstDay.Year, FirstDay.Month);
-            return Amount / DateTime.DaysInMonth(
-                int.Parse(YearMonth.Substring(0, 4)),
-                    int.Parse((YearMonth.Substring(4, 2))));
+            get
+            {
+                return DateTime.DaysInMonth(FirstDay.Year, FirstDay.Month);
+            }
+        }
+
+        public int DailyAmount
+        {
+            get
+            {
+                return Amount / TotalDays; 
+            }
+        }
+
+        public int EffectiveAmount(Period period)
+        {
+            return DailyAmount * period.OverlappingDays(new Period(FirstDay, LastDay));
         }
     }
 }
